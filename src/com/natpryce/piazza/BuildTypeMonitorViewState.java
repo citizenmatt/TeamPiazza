@@ -18,34 +18,33 @@
  */
 package com.natpryce.piazza;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import jetbrains.buildServer.Build;
-import jetbrains.buildServer.serverSide.SBuildType;
-import jetbrains.buildServer.serverSide.SRunningBuild;
-import jetbrains.buildServer.serverSide.ShortStatistics;
+import jetbrains.buildServer.serverSide.*;
+import jetbrains.buildServer.serverSide.comments.Comment;
 import jetbrains.buildServer.vcs.SelectPrevBuildPolicy;
 import jetbrains.buildServer.vcs.VcsModification;
+
+import java.util.*;
 
 public class BuildTypeMonitorViewState {
 
 	private final SBuildType buildType;
 
-	private final List<String> commitMessages;
-	private Build lastFinishedBuild;
-	private final Build latestBuild;
+    private final List<String> commitMessages;
+	private final SBuild lastFinishedBuild;
+	private final SBuild latestBuild;
 	private final TestStatisticsViewState tests;
 	private final Set<PiazzaUser> committers;
+    private final UserGroup users;
+    private final ResponsibilityInfo responsibilityInfo;
 
-	public BuildTypeMonitorViewState (SBuildType buildType, UserGroup userPictures) {
+    public BuildTypeMonitorViewState (SBuildType buildType, UserGroup userPictures) {
 		this.buildType = buildType;
-		this.lastFinishedBuild = buildType.getLastChangesFinished();
+        this.users = userPictures;
+        this.lastFinishedBuild = buildType.getLastChangesFinished();
 		this.latestBuild = buildType.getLastChangesStartedBuild();
 		this.commitMessages = commitMessagesForBuild(latestBuild);
+        this.responsibilityInfo = buildType.getResponsibilityInfo();
 
 		committers = userPictures.usersInvolvedInCommit(
 				committersForBuild(latestBuild),
@@ -80,13 +79,9 @@ public class BuildTypeMonitorViewState {
 	}
 
 	private TestStatisticsViewState testStatistics () {
-		if (isBuilding()) {
-			ShortStatistics stats = ((SRunningBuild) latestBuild).getShortStatistics();
-			return new TestStatisticsViewState(
-					stats.getPassedTestCount(), stats.getFailedTestCount(), stats.getIgnoredTestCount());
-		} else {
-			return new TestStatisticsViewState(0, 0, 0);
-		}
+        ShortStatistics stats = latestBuild.getShortStatistics();
+        return new TestStatisticsViewState(
+                stats.getPassedTestCount(), stats.getFailedTestCount(), stats.getIgnoredTestCount());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -107,13 +102,16 @@ public class BuildTypeMonitorViewState {
 	}
 
 	public String getCombinedStatusClasses () {
-		return status().toStringReflectingCurrentlyBuilding(isBuilding());
+        String status = status().toStringReflectingCurrentlyBuilding(isBuilding());
+        if (buildType.isPaused())
+            return status + " Paused";
+        return status;
 	}
 
 	public boolean isBuilding () {
 		return !latestBuild.isFinished();
 	}
-
+    
 	public Build getLatestBuild () {
 		return latestBuild;
 	}
@@ -121,9 +119,13 @@ public class BuildTypeMonitorViewState {
 	public String getActivity () {
 		if (isBuilding()) {
 			return ((SRunningBuild) latestBuild).getShortStatistics().getCurrentStage();
-		} else {
-			return status().toString();
-		}
+		} if (buildType.isPaused()) {
+            Comment comment = buildType.getPauseComment();
+            if (comment != null)
+                return "Paused - " + comment.getComment();
+        }
+
+		return status().toString();
 	}
 
 	public int getCompletedPercent () {
@@ -174,6 +176,7 @@ public class BuildTypeMonitorViewState {
 	}
 
 	public BuildStatus runningBuildStatus () {
+        // Don't return paused status here - we're interested in what the current build is doing, for the progress bar
 		if (latestBuild == null) {
 			return BuildStatus.UNKNOWN;
 		} else if (latestBuild.getBuildStatus().isFailed()) {
@@ -190,4 +193,41 @@ public class BuildTypeMonitorViewState {
 	public Set<PiazzaUser> getCommitters () {
 		return committers;
 	}
+    
+    public String getInvestigationStatusClass() {
+        if (status() == BuildStatus.SUCCESS)
+            return "NotInvestigated";
+
+        switch (responsibilityInfo.getState())
+        {
+            case NONE: return "NotInvestigated";
+            case FIXED: return "Fixed";
+            case GIVEN_UP: return "GivenUp";
+            case TAKEN: return "UnderInvestigation";
+        }
+
+        return "";
+    }
+
+    public boolean isBeingInvestigated () {
+        return responsibilityInfo.getState().isActive()
+                || responsibilityInfo.getState().isFixed()
+                || responsibilityInfo.getState().isGivenUp();
+    }
+    
+    public PiazzaUser getInvestigator() {
+        if (isBeingInvestigated())
+            return users.getUser(responsibilityInfo.getResponsibleUser().getDescriptiveName().trim());
+        return null;
+    }
+    
+    public String getInvestigationComment() {
+        if (isBeingInvestigated())
+            return responsibilityInfo.getComment();
+        return "";
+    }
+
+    public boolean isQueued() {
+        return buildType.isInQueue();
+    }
 }

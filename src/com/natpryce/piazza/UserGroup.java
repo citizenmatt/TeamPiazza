@@ -59,4 +59,17 @@ public class UserGroup {
 		}
 	}
 
+    public PiazzaUser getUser(String descriptiveName) {
+        for (PiazzaUser piazzaUser : piazzaUsers) {
+            if (piazzaUser.getName() == descriptiveName) {
+                return piazzaUser;
+            }
+        }
+
+        return null;
+    }
+    
+    public List<PiazzaUser> getUsers() {
+        return piazzaUsers;
+    }
 }

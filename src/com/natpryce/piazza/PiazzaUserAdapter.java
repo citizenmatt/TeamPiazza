@@ -64,10 +64,11 @@ public class PiazzaUserAdapter implements UserModelListener {
 		Set<SUser> users = userModel.getAllUsers().getUsers();
 		for (SUser user : users) {
 			String portraitUrl = PiazzaNotificator.getPortraitUrl(user);
-			if (StringUtils.hasText(portraitUrl)) {
-				addUserToPiazzaMonitor(user, portraitUrl);
+			if (!StringUtils.hasText(portraitUrl)) {
+                portraitUrl = "";
 			}
-		}
+            addUserToPiazzaMonitor(user, portraitUrl);
+ 		}
 
 	}
 

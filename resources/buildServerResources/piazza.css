@@ -73,15 +73,59 @@ body.Building .Content {
     border: solid 3px;
     -moz-border-radius: 10px;
     -webkit-border-radius: 10px;
+    position: relative;
+    overflow-x: hidden;
 }
 
 .Build.Success {
     border-color: #42AA52;
+    background-color: #A5DDAD;
 }
 
 .Build.Failure {
     border-color: #ff0000;
+    background-color: #E23B30;
 }
+
+.Build.Failure.UnderInvestigation {
+}
+
+.Build.Failure.Fixed {
+    background-color: #A5AA78;
+    background-color: #A5DDAD;
+    color: #FF0000;
+}
+
+.Build.Failure.GivenUp .Investigation {
+    opacity: 0.5;
+}
+
+.Build.Paused {
+    opacity: 0.7;
+}
+
+.Build {
+    table-layout:fixed;
+}
+
+.Build .Details {
+    display: table-cell;
+    width: 100%;
+    padding: 0;
+    vertical-align: top;
+}
+
+.Build .Investigation {
+    display: table-cell;
+    text-align: right;
+    padding: 0;
+    min-width: 1px;
+}
+
+.Build .Investigation .Comment {
+    display: none;
+}
+
 
 .Portrait {
     display: inline-block;
@@ -93,6 +137,8 @@ body.Building .Content {
     border: 1px solid #444444;
     margin-left: auto;
     margin-right: auto;
+    max-width: 60px;
+    max-height: 60px;
 }
 
 .Portrait .Name {
@@ -139,39 +185,40 @@ body.Building .Content {
     position: relative;
     border: 1px solid #444444;
     background-color: white;
-    height: 40px;
+    padding: 4px;
     overflow-x: hidden;
+}
+
+.ProgressBar .ThumbInner {
+    margin: 4px;
+    height: 32px;
 }
 
 .ProgressBar .Activity {
     position: absolute;
-    border: 4px solid white;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    padding: 4px;
-
+    top: 14px;
+    left: 14px;
+    right: 14px;
     font-size: 16px;
     text-align: left;
     vertical-align: middle;
-    overflow-x: visible;
+    display: block;
     white-space: nowrap;
+    overflow-x: hidden;
 }
 
-.ProgressBar .Success {
+.ProgressBar.Success .ThumbInner {
     background-color: #42aa6a;
 }
 
-.ProgressBar .Failure {
+.ProgressBar.Failure .ThumbInner {
     background-color: #E23B30;
 }
 
-.Builds .Build.Failure {
-    background-color: #E23B30;
+.Investigation {
 }
 
-.Builds .Build.Success {
-    background-color: #A5DDAD;
+.Investigation .Portrait {
 }
 
 .Version {

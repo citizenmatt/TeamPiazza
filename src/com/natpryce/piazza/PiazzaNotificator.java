@@ -124,7 +124,11 @@ public class PiazzaNotificator implements Notificator {
 		// ignored
 	}
 
-	public void notifyTestsUnmuted (Collection<STest> tests, MuteInfo muteInfo, Set<SUser> users) {
+    public void notifyTestsUnmuted(Collection<STest> tests, MuteInfo muteInfo, SUser user, Set<SUser> users) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public void notifyTestsUnmuted (Collection<STest> tests, MuteInfo muteInfo, Set<SUser> users) {
 		// ignored
 	}
 }

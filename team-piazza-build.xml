@@ -83,6 +83,7 @@
     <pathelement location="${path.variable.teamcitydistribution}/devPackage/server-api.jar" />
     <pathelement location="${path.variable.teamcitydistribution}/lib/servlet-api.jar" />
     <pathelement location="${path.variable.teamcitydistribution}/webapps/ROOT/WEB-INF/lib/jdom.jar" />
+    <pathelement location="${path.variable.teamcitydistribution}/webapps/ROOT/WEB-INF/lib/annotations.jar" />
     <pathelement location="${path.variable.teamcitydistribution}/webapps/ROOT/WEB-INF/lib/spring-webmvc.jar" />
     <pathelement location="${path.variable.teamcitydistribution}/webapps/ROOT/WEB-INF/lib/spring.jar" />
   </path>
